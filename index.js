@@ -5,8 +5,10 @@ const employeeRouter = require('./routes/EmployeeRoutes.js');
 const app = express();
 app.use(express.json()); // Make sure it comes back as json
 
+const connectionString = 'mongodb+srv://kunga_lhosel:2641678@cluster0.ikvyl.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'
+
 //TODO - Replace you Connection String here
-mongoose.connect('PASTE_YOUR_CONNECTION_STRING_HERE', {
+mongoose.connect(connectionString, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(success => {

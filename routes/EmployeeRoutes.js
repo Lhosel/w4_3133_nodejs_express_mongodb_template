@@ -9,10 +9,10 @@ app.get('/employees', async (req, res) => {
   //Sorting
   //use "asc", "desc", "ascending", "descending", 1, or -1
   //const employees = await employeeModel.find({}).sort({'firstname': -1});
-  
+
   //Select Specific Column
   //const employees = await employeeModel.find({}).select("firstname lastname salary").sort({'salary' : 'desc'});  
-  
+
   try {
     console.log(employees[0].surname)
     res.status(200).send(employees);
@@ -26,7 +26,7 @@ app.get('/employees', async (req, res) => {
 app.get('/employee', async (req, res) => {
   //const employees = await employeeModel.find({_id: req.query.id});
   //const employees = await employeeModel.findById(req.query.id);
-  const employees = await employeeModel.find({_id: req.query.id}).select("firstname lastname salary");
+  const employees = await employeeModel.find({ _id: req.query.id }).select("firstname lastname salary");
 
   try {
     res.send(employees);
@@ -39,25 +39,31 @@ app.get('/employee', async (req, res) => {
 //http://localhost:8081/employees/firstname/pritesh
 app.get('/employees/firstname/:name', async (req, res) => {
   const name = req.params.name
-  const employees = await employeeModel.find({firstname : name});
-  
+  //const employees = await employeeModel.findOne({ firstname: name });
+
+  /*
+  console.log(employees)
+
   //Using Virtual Field Name
-  //console.log(employees[0].fullname)
+  console.log(`Firstname: ${employees.firstname}`)
+  console.log(`Surname: ${employees.surname}`)
 
   //Using Instance method
-  //console.log(employees[0].getFullName())
+  console.log(`Full Name ${employees.getFullName()}`)
+  console.log(`Formatted Salary ${employees.getFormattedSalary()}`)
+  */
 
   //Using Static method
   //const employees = await employeeModel.getEmployeeByFirstName(name)
-  
+
   //Using Query Helper
-  //const employees = await employeeModel.findOne().byFirstName(name)
-  
+  const employees = await employeeModel.findOne().byFirstName(name, 10)
+
   try {
-    if(employees.length != 0){
+    if (employees.length != 0) {
       res.send(employees);
-    }else{
-      res.send(JSON.stringify({status:false, message: "No data found"}))
+    } else {
+      res.send(JSON.stringify({ status: false, message: "No data found" }))
     }
   } catch (err) {
     res.status(500).send(err);
@@ -68,22 +74,22 @@ app.get('/employees/firstname/:name', async (req, res) => {
 //http://localhost:8081/employees/search?firstname=pritesh&lastname=patel
 app.get('/employees/search', async (req, res) => {
   //console.log(req.query)
-  if(Object.keys(req.query).length != 2){
-    res.send(JSON.stringify({status:false, message: "Insufficient query parameter"}))
-  }else{
+  if (Object.keys(req.query).length != 2) {
+    res.send(JSON.stringify({ status: false, message: "Insufficient query parameter" }))
+  } else {
     const fname = req.query.firstname
     const lname = req.query.lastname
     //{ $or: [{ name: "Rambo" }, { breed: "Pugg" }, { age: 2 }] },
     //const employees = await employeeModel.find({ $and: [{firstname : fname}, {lastname : lname}]});
-    const employees = await employeeModel.find({ $or: [{firstname : fname}, {lastname : lname}]});
+    const employees = await employeeModel.find({ $or: [{ firstname: fname }, { lastname: lname }] });
     ///Use below query for AND condition
     //const employees = await employeeModel.find({firstname : fname, lastname : lname});
 
     try {
-      if(employees.length != 0){
+      if (employees.length != 0) {
         res.send(employees);
-      }else{
-        res.send(JSON.stringify({status:false, message: "No data found"}))
+      } else {
+        res.send(JSON.stringify({ status: false, message: "No data found" }))
       }
     } catch (err) {
       res.status(500).send(err);
@@ -96,21 +102,21 @@ app.get('/employees/search', async (req, res) => {
 //http://localhost:8081/employees/salary?value=1000
 app.get('/employees/salary', async (req, res) => {
   //console.log(req.query)
-  if(Object.keys(req.query).length != 1){
-    res.send(JSON.stringify({status:false, message: "Insufficient query parameter"}))
-  }else{
+  if (Object.keys(req.query).length != 1) {
+    res.send(JSON.stringify({ status: false, message: "Insufficient query parameter" }))
+  } else {
     const salary = req.query.value
-  
+
     //const employees = await employeeModel.find({salary : {$gte : salary}});
     const employees = await employeeModel.find({}).where("salary").gte(salary);
     // <= 10000
     //const employees = await employeeModel.find({salary : {$lte : salary }});
-    
+
     try {
-      if(employees.length != 0){
+      if (employees.length != 0) {
         res.send(employees);
-      }else{
-        res.send(JSON.stringify({status:false, message: "No data found"}))
+      } else {
+        res.send(JSON.stringify({ status: false, message: "No data found" }))
       }
     } catch (err) {
       res.status(500).send(err);
@@ -123,23 +129,23 @@ app.get('/employees/salary', async (req, res) => {
 app.get('/employees/test', async (req, res) => {
   try {
     const employees = employeeModel.
-                        find({})
-                        .where('lastname').equals('patel')
-                        .where('salary').gte(1000.00).lte(10000.00)
-                        .where('firstname').in(['pritesh', 'moksh'])
-                        .limit(10)
-                        .sort('-salary')
-                        .select('firstname lastname salary')
-                        .exec((err, data) => {
-                          if (err){
-                              res.send(JSON.stringify({status:false, message: "No data found"}));
-                          }else{
-                              res.send(data);
-                          }
-                        });
-    } catch (err) {
-      res.status(500).send(err);
-    }
+      find({})
+      .where('lastname').equals('patel')
+      .where('salary').gte(1000.00).lte(10000.00)
+      .where('firstname').in(['pritesh', 'moksh'])
+      .limit(10)
+      .sort('-salary')
+      .select('firstname lastname salary')
+      .exec((err, data) => {
+        if (err) {
+          res.send(JSON.stringify({ status: false, message: "No data found" }));
+        } else {
+          res.send(data);
+        }
+      });
+  } catch (err) {
+    res.status(500).send(err);
+  }
 });
 
 //Create New Record
@@ -158,34 +164,34 @@ app.get('/employees/test', async (req, res) => {
 */
 //http://localhost:8081/employee
 app.post('/employee', async (req, res) => {
-  
-    console.log(req.body)
-    const employee = new employeeModel(req.body);
-    
-    try {
-      await employee.save((err) => {
-        if(err){
-          //Custome error handling
-          //console.log(err.errors['firstname'].message)
-          //console.log(err.errors['lastname'].message)
-          //console.log(err.errors['gender'].message)
-          //console.log(err.errors['salary'].message)
-          res.send(err)
-        }else{
-          res.send(employee);
-        }
-      });
-    } catch (err) {
-      res.status(500).send(err);
-    }
-  });
+
+  console.log(req.body)
+  const employee = new employeeModel(req.body);
+
+  try {
+    await employee.save((err) => {
+      if (err) {
+        //Custome error handling
+        //console.log(err.errors['firstname'].message)
+        //console.log(err.errors['lastname'].message)
+        //console.log(err.errors['gender'].message)
+        //console.log(err.errors['salary'].message)
+        res.send(err)
+      } else {
+        res.send(employee);
+      }
+    });
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
 
 //Update Record
 //http://localhost:8081/employee/60174acfcde1ab2e78a3a9b0
 app.patch('/employee/:id', async (req, res) => {
   try {
     console.log(req.body)
-    const employee =  await employeeModel.findOneAndUpdate({ _id: req.params.id}, req.body, {new: true})
+    const employee = await employeeModel.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true })
     //const employee =  await employeeModel.findByIdAndUpdate(req.params.id, req.body, {new: true})
     res.send(employee)
   } catch (err) {
@@ -196,32 +202,30 @@ app.patch('/employee/:id', async (req, res) => {
 //Delete Record by ID
 //http://localhost:8081/employee/5d1f6c3e4b0b88fb1d257237
 app.delete('/employee/:id', async (req, res) => {
-    try {
-      const employee = await employeeModel.findByIdAndDelete(req.params.id)
+  try {
+    const employee = await employeeModel.findByIdAndDelete(req.params.id)
 
-      if (!employee) 
-      {
-        res.status(404).send(JSON.stringify({status: false, message:"No item found"}))
-      }else{
-        res.status(200).send(JSON.stringify({status: true, message:"Record Deleted Successfully"}))
-      }
-    } catch (err) {
-      res.status(500).send(err)
+    if (!employee) {
+      res.status(404).send(JSON.stringify({ status: false, message: "No item found" }))
+    } else {
+      res.status(200).send(JSON.stringify({ status: true, message: "Record Deleted Successfully" }))
     }
-  })
+  } catch (err) {
+    res.status(500).send(err)
+  }
+})
 
-  //Delete Record using findOneAndDelete()
+//Delete Record using findOneAndDelete()
 //http://localhost:8081/employee/delete?emailid=5d1f6c3e4b0b88fb1d257237
 app.get('/employee/delete', async (req, res) => {
   try {
-    const employee = await employeeModel.findOneAndDelete({email: req.query.emailid})
+    const employee = await employeeModel.findOneAndDelete({ email: req.query.emailid })
 
-    if (!employee) 
-    {
-      res.status(404).send(JSON.stringify({status: false, message:"No item found"}))
-    }else{
+    if (!employee) {
+      res.status(404).send(JSON.stringify({ status: false, message: "No item found" }))
+    } else {
       //employee.remove() //Update for Mongoose v5.5.3 - remove() is now deprecated
-      res.status(200).send(JSON.stringify({status: true, message:"Record Deleted Successfully"}))
+      res.status(200).send(JSON.stringify({ status: true, message: "Record Deleted Successfully" }))
     }
   } catch (err) {
     res.status(500).send(err)

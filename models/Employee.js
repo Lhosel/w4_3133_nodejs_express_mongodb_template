@@ -2,58 +2,116 @@ const mongoose = require('mongoose');
 
 const EmployeeSchema = new mongoose.Schema({
   firstname: {
-    type: String
+    type: String,
+    required: [true, 'Please enter first name'],
+    trim: true,
+    lowercase: true
   },
   lastname: {
-    type: String
+    type: String,
+    alias: 'surname', // or familyname
+    required: true,
+    trim: true,
+    lowercase: true
   },
   email: {
-    type: String
+    type: String,
+    required: true,
+    trim: true,
+    uppercase: true,
+    minlength: 5,
+    maxlength: 50,
+
+    // custom validation for email
+    validate: function (value) {
+      var emailRegex = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
+      return emailRegex.test(value);
+    }
   },
   gender: {
-    type: String
+    type: String,
+    required: true,
+    lowercase: true,
+    enum: ['male', 'female', 'other']
   },
-  city:{
-    type: String
+  city: {
+    type: String,
+    required: true,
+    trim: true
   },
   designation: {
-    type: String
+    type: String,
+    required: true,
+    trim: true
   },
   salary: {
-    type: Number
+    type: Number,
+    default: 0.0,
+    //min: [1000, 'Below minimum salary'],
+    //max: 25000,
+
+    validate: function (value) {
+      if (value < 0) {
+        throw new Error('Negative salary not allowed')
+      }
+    }
   },
-  created: { 
-    type: Date
+  created: {
+    type: Date,
+    default: Date.now,
+    alias: 'createdat'
   },
-  updatedat: { 
-    type: Date
+  updatedat: {
+    type: Date,
+    default: Date.now
   },
 });
 
 //Declare Virtual Fields
+EmployeeSchema.virtual('fullname')
+  .get(function () {
+    return `${this.firstname} ${this.lastname}`
+  })
+  .set(function (value) {
+    console.log(value)
+  })
 
 
 //Custom Schema Methods
 //1. Instance Method Declaration
+EmployeeSchema.methods.getFullName = function () {
+  return `${this.firstname} ${this.lastname}`
+}
 
+EmployeeSchema.methods.getFormattedSalary = function () {
+  return `${this.salary}`
+}
 
 //2. Static method declararion
-
+EmployeeSchema.static("getEmployeeByFirstName", function (value) {
+  return this.find({ firstname: value })
+})
 
 //Writing Query Helpers
+EmployeeSchema.query.byLastName = function (value, salary) {
+  return this.where({ lastname: value }).where('salary').gte(salary)
+}
 
+EmployeeSchema.query.byFirstName = function (value, salary) {
+  return this.where({ firstname: value }).where('salary').gte(salary)
+}
 
 
 EmployeeSchema.pre('save', (next) => {
   console.log("Before Save")
   let now = Date.now()
-   
+
   this.updatedat = now
   // Set a value for createdAt only if it is null
   if (!this.created) {
     this.created = now
   }
-  
+
   // Call the next function in the pre-save chain
   next()
 });
